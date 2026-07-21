@@ -63,7 +63,7 @@ const Homepage = () => {
         </div>
         <div className="flex items-center justify-center mb-5 cursor-pointer">
           <Link
-            href="/order"
+            href="/menu"
             className="font-heading text-xl bg-primary rounded-lg px-5 py-3 text-secondary shadow-2xl"
           >
             VIEW OUR MENU

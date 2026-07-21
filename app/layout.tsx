@@ -4,6 +4,7 @@ import "./globals.css";
 
 import Navbar from "@/components/Navbar";
 import Footer from "@/components/Footer";
+import { CartProvider } from "@/context/CartContext";
 
 const bevan = Bevan({
   variable: "--font-bevan",
@@ -36,9 +37,11 @@ export default function RootLayout({
       className={`${bevan.variable} ${laila.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <Navbar />
-        {children}
-        <Footer />
+        <CartProvider>
+          <Navbar />
+          {children}
+          <Footer />
+        </CartProvider>
       </body>
     </html>
   );

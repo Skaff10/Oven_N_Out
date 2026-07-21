@@ -6,6 +6,12 @@
   --color-secondary: #f1e1ce;
   --color-text: #332218;
 
+  /* Dark-UI palette for order pages */
+  --color-dark: #15100a;
+  --color-dark-card: #231810;
+  --color-dark-elevated: #2f2118;
+  --color-dark-border: #4a3628;
+
   --background: var(--color-secondary);
   --foreground: var(--color-text);
 }
@@ -15,6 +21,11 @@
   --color-accent: var(--color-accent);
   --color-secondary: var(--color-secondary);
   --color-text: var(--color-text);
+
+  --color-dark: var(--color-dark);
+  --color-dark-card: var(--color-dark-card);
+  --color-dark-elevated: var(--color-dark-elevated);
+  --color-dark-border: var(--color-dark-border);
 
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -51,4 +62,84 @@ html {
 
 .animate-marquee-right {
   animation: marqueeRight 20s linear infinite;
+}
+
+/* ── Order page animations ─────────────────────────────── */
+@keyframes slideInRight {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@keyframes slideOutRight {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+@keyframes cartBounce {
+  0%,
+  100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.08);
+  }
+}
+
+.animate-slide-in-right {
+  animation: slideInRight 0.3s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+.animate-fade-in {
+  animation: fadeIn 0.2s ease-out forwards;
+}
+.animate-slide-up {
+  animation: slideUp 0.35s cubic-bezier(0.32, 0.72, 0, 1) forwards;
+}
+.animate-cart-bounce {
+  animation: cartBounce 0.3s ease;
+}
+
+/* Hide scrollbar but keep scroll functionality */
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
 }
