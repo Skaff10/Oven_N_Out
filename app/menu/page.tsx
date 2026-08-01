@@ -34,7 +34,7 @@ export default function MenuSection() {
           >
             <div className="relative w-full aspect-[2/3] max-w-[400px] md:max-w-[620px] lg:max-w-[700px] rounded-2xl overflow-hidden shadow-2xl">
               <Image
-                src="/images/menu.png"
+                src="/images/menu2.png"
                 alt="Restaurant menu"
                 fill
                 className="object-contain rounded-2xl"

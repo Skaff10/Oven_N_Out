@@ -15,9 +15,7 @@ interface OrderPageClientProps {
 export default function OrderPageClient({ items }: OrderPageClientProps) {
   const { totalItems, subtotal, openCart } = useCart();
   const categories = useMemo(() => getCategories(items), [items]);
-  const [activeCategory, setActiveCategory] = useState(
-    categories[0] || ""
-  );
+  const [activeCategory, setActiveCategory] = useState(categories[0] || "");
 
   const handleCategorySelect = (category: string) => {
     setActiveCategory(category);
@@ -50,11 +48,13 @@ export default function OrderPageClient({ items }: OrderPageClientProps) {
 
   return (
     <div className="w-full min-h-screen bg-secondary pt-24 pb-12 flex flex-col font-body">
-
       <div className="max-w-6xl mx-auto w-full px-4 md:px-8 mt-6">
-        <h1 className="font-heading text-4xl text-primary mb-2">ORDER ONLINE</h1>
+        <h1 className="font-heading text-4xl text-primary mb-2">
+          ORDER ONLINE
+        </h1>
         <p className="text-text/50 text-sm max-w-lg mb-2 ml-1">
-          Fresh, hot, and straight from our kitchen to your door in Dhaka. Choose your favorites below!
+          Fresh, hot, and straight from our kitchen to your door in Dhaka.
+          Choose your favorites below!
         </p>
       </div>
 
@@ -95,18 +95,18 @@ export default function OrderPageClient({ items }: OrderPageClientProps) {
       {totalItems > 0 && (
         <button
           onClick={openCart}
-          className="fixed bottom-6 right-6 z-50 bg-accent hover:bg-accent/90 text-text font-heading flex items-center gap-3 px-5 py-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 animate-cart-bounce cursor-pointer group"
+          className="fixed bottom-4 right-2   z-50 bg-accent hover:bg-accent/90 text-text font-heading flex justify-center items-center gap-3 px-5 py-4 rounded-full shadow-2xl transition-all duration-300 hover:scale-105 active:scale-95 animate-cart-bounce cursor-pointer group"
         >
+          <span className="inline-block border-r border-text/20 pr-3">
+            VIEW CART
+            
+          </span>
           <div className="relative">
             <FaShoppingBag size={20} />
             <span className="absolute -top-2.5 -right-2.5 bg-primary text-secondary text-[10px] font-heading w-5 h-5 rounded-full flex items-center justify-center border border-accent">
               {totalItems}
             </span>
           </div>
-          <span className="hidden sm:inline-block border-l border-text/20 pl-3">
-            
-            {subtotal} <span>tk</span>
-          </span>
         </button>
       )}
     </div>

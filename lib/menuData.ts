@@ -177,7 +177,7 @@ export const MENU_DATA: MenuItem[] = [
     id: "sd-chicken-fry",
     name: "Chicken Fry",
     description: "Crispy fried chicken — leg or thigh, golden perfection",
-    price: 179,
+    price: 119,
     category: "Sides",
     imageUrl: "/images/chickenfry.png",
     available: true,
