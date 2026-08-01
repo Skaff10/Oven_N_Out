@@ -42,6 +42,8 @@ export default function MonthlyReportClient({
     website: 0,
     facebook: 0,
     call: 0,
+    pathao: 0,
+    foodpanda: 0,
   };
   validOrders.forEach((o) => {
     incomeBySource[o.source] = (incomeBySource[o.source] || 0) + o.totalAmount;
