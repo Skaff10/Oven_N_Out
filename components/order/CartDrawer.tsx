@@ -44,6 +44,12 @@ export default function CartDrawer() {
 
   return (
     <div className="fixed inset-0 z-150 flex justify-end">
+      {/* Backdrop */}
+      <div
+        className="fixed inset-0 bg-black/60 backdrop-blur-xs transition-opacity cursor-pointer"
+        onClick={closeCart}
+      />
+
       {/* Drawer Panel */}
       <div
         ref={drawerRef}

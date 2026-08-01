@@ -2,9 +2,7 @@ import type { Metadata } from "next";
 import { Bevan, Laila } from "next/font/google";
 import "./globals.css";
 
-import Navbar from "@/components/Navbar";
-import Footer from "@/components/Footer";
-import { CartProvider } from "@/context/CartContext";
+import SiteShell from "@/components/SiteShell";
 
 const bevan = Bevan({
   variable: "--font-bevan",
@@ -37,11 +35,7 @@ export default function RootLayout({
       className={`${bevan.variable} ${laila.variable} h-full antialiased`}
     >
       <body className="min-h-full flex flex-col">
-        <CartProvider>
-          <Navbar />
-          {children}
-          <Footer />
-        </CartProvider>
+        <SiteShell>{children}</SiteShell>
       </body>
     </html>
   );

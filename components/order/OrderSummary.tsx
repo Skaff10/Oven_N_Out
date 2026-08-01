@@ -1,20 +1,18 @@
-import { CartItem, OrderType } from "@/types";
+import { CartItem } from "@/types";
 import { DELIVERY_FEE } from "@/config/constants";
 
 interface OrderSummaryProps {
-  items: CartItem[];
+  items: any[];
   subtotal: number;
-  orderType: OrderType;
   showDetails?: boolean;
 }
 
 export default function OrderSummary({
   items,
   subtotal,
-  orderType,
   showDetails = true,
 }: OrderSummaryProps) {
-  const currentDeliveryFee = orderType === "delivery" ? DELIVERY_FEE : 0;
+  const currentDeliveryFee = DELIVERY_FEE;
   const total = subtotal + currentDeliveryFee;
 
   return (
@@ -25,33 +23,37 @@ export default function OrderSummary({
 
       {/* Item List */}
       <div className="space-y-4 max-h-72 overflow-y-auto scrollbar-hide pr-1">
-        {items.map((item, idx) => (
-          <div key={idx} className="flex gap-3 items-start justify-between">
-            <div className="flex gap-3">
-              <div className="min-w-0">
-                <p className="font-body text-sm text-primary font-medium truncate">
-                  {item.name}
-                </p>
-                <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
-                  <span className="font-body text-xs text-text">
-                    Quantity: {item.quantity}
-                  </span>
-                  {item.variant && (
-                    <>
-                      <span className="text-text text-xs">•</span>
-                      <span className="font-body text-xs text-text">
-                        {item.variant}
-                      </span>
-                    </>
-                  )}
+        {items.map((item, idx) => {
+          const qty = item.quantity ?? item.qty ?? 1;
+          const price = item.price ?? item.unitPrice ?? 0;
+          return (
+            <div key={idx} className="flex gap-3 items-start justify-between">
+              <div className="flex gap-3">
+                <div className="min-w-0">
+                  <p className="font-body text-sm text-primary font-medium truncate">
+                    {item.name}
+                  </p>
+                  <div className="flex flex-wrap items-center gap-1.5 mt-0.5">
+                    <span className="font-body text-xs text-text">
+                      Quantity: {qty}
+                    </span>
+                    {item.variant && (
+                      <>
+                        <span className="text-text text-xs">•</span>
+                        <span className="font-body text-xs text-text">
+                          {item.variant}
+                        </span>
+                      </>
+                    )}
+                  </div>
                 </div>
               </div>
+              <span className="font-heading text-sm text-text/80 whitespace-nowrap">
+                {price * qty} <span>tk</span>
+              </span>
             </div>
-            <span className="font-heading text-sm text-text/80 whitespace-nowrap">
-              {item.price * item.quantity} <span>tk</span>
-            </span>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Summary lines */}
@@ -72,7 +74,7 @@ export default function OrderSummary({
 
         <div className="flex justify-between font-heading text-lg text-primary pt-3 border-t border-dark-border/40">
           <span>Total</span>
-          <span className="text-accent">
+          <span className="text-primary">
             {total} <span>tk</span>
           </span>
         </div>

@@ -5,7 +5,6 @@ import { MenuItem } from "@/types";
 import { useCart } from "@/context/CartContext";
 import CategoryNav from "@/components/order/CategoryNav";
 import MenuItemCard from "@/components/order/MenuItemCard";
-import CartDrawer from "@/components/order/CartDrawer";
 import { getCategories } from "@/lib/menu";
 import { FaShoppingBag } from "react-icons/fa";
 
@@ -91,9 +90,6 @@ export default function OrderPageClient({ items }: OrderPageClientProps) {
           );
         })}
       </div>
-
-      {/* Slide-over Cart Drawer */}
-      <CartDrawer />
 
       {/* Floating Cart Button (visible if cart has items) */}
       {totalItems > 0 && (

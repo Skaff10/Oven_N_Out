@@ -9,14 +9,13 @@ import Input from "@/components/ui/Input";
 import OrderSummary from "@/components/order/OrderSummary";
 import { createOrder } from "@/lib/orders";
 import { DELIVERY_AREAS, DELIVERY_FEE } from "@/config/constants";
-import { FaArrowLeft, FaTruck, FaStore } from "react-icons/fa";
-import type { OrderType, OrderCustomer, PaymentMethod } from "@/types";
+import { FaArrowLeft } from "react-icons/fa";
+import type { OrderCustomer, PaymentMethod } from "@/types";
 
 export default function CheckoutPage() {
   const router = useRouter();
   const { items, subtotal, clearCart } = useCart();
 
-  const [orderType, setOrderType] = useState<OrderType>("delivery");
   const [formData, setFormData] = useState({
     name: "",
     phone: "",
@@ -49,7 +48,7 @@ export default function CheckoutPage() {
       tempErrors.phone = "Please enter a valid Bangladeshi mobile number";
     }
 
-    if (orderType === "delivery" && !formData.address.trim()) {
+    if (!formData.address.trim()) {
       tempErrors.address = "Delivery address is required";
     }
 
@@ -77,15 +76,11 @@ export default function CheckoutPage() {
       const customer: OrderCustomer = {
         name: formData.name.trim(),
         phone: formData.phone.trim(),
-        ...(orderType === "delivery"
-          ? {
-              address: formData.address.trim(),
-              area: formData.area,
-            }
-          : {}),
+        address: formData.address.trim(),
+        area: formData.area,
       };
 
-      const finalDeliveryFee = orderType === "delivery" ? DELIVERY_FEE : 0;
+      const finalDeliveryFee = DELIVERY_FEE;
       const total = subtotal + finalDeliveryFee;
 
       const orderId = await createOrder({
@@ -94,7 +89,6 @@ export default function CheckoutPage() {
         deliveryFee: finalDeliveryFee,
         total,
         customer,
-        orderType,
         paymentMethod: "cod",
       });
 
@@ -199,7 +193,6 @@ export default function CheckoutPage() {
             <OrderSummary
               items={items}
               subtotal={subtotal}
-              orderType={orderType}
             />
           </div>
         </div>

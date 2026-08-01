@@ -25,16 +25,25 @@ export async function getMenuItems(): Promise<MenuItem[]> {
   try {
     const q = query(
       collection(db, "menuItems"),
-      where("available", "==", true),
-      orderBy("category"),
-      orderBy("name")
+      where("available", "==", true)
     );
     const snapshot = await getDocs(q);
-    return snapshot.docs.map((doc) => ({
+    const items = snapshot.docs.map((doc) => ({
       id: doc.id,
       ...doc.data(),
       createdAt: doc.data().createdAt?.toDate?.() || new Date(),
     })) as MenuItem[];
+
+    return items.sort((a, b) => {
+      const aIdx = CATEGORY_ORDER.indexOf(a.category);
+      const bIdx = CATEGORY_ORDER.indexOf(b.category);
+      if (aIdx !== bIdx) {
+        if (aIdx === -1) return 1;
+        if (bIdx === -1) return -1;
+        return aIdx - bIdx;
+      }
+      return (a.name || "").localeCompare(b.name || "");
+    });
   } catch (error) {
     console.error("[menu] Firestore fetch failed, using fallback:", error);
     return MENU_DATA.filter((item) => item.available);

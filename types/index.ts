@@ -12,6 +12,7 @@ export interface MenuItem {
   category: string;
   imageUrl: string;
   available: boolean;
+  active?: boolean;
   createdAt?: Date;
 }
 
@@ -32,8 +33,75 @@ export interface OrderCustomer {
   area?: string;
 }
 
-export type OrderType = "delivery" | "pickup";
-export type PaymentMethod = "cod" | "bkash" | "nagad" | "card";
+export type OrderSource = "website" | "facebook" | "call" | "pathao" | "foodpanda";
+
+export type PaymentMethod = "cash" | "bkash" | "nagad" | "card" | "other" | "cod";
+
+export type PaymentStatus = "paid" | "due";
+
+export type DeliveryStatus =
+  | "pending"
+  | "out_for_delivery"
+  | "delivered"
+  | "cancelled";
+
+export interface OrderItem {
+  name: string;
+  qty: number;
+  unitPrice: number;
+}
+
+export interface AdminOrder {
+  id: string;
+  source: OrderSource;
+  items: OrderItem[];
+  totalAmount: number;
+  customerName: string;
+  customerPhone: string;
+  customerAddress: string;
+  paymentMethod: PaymentMethod;
+  paymentStatus: PaymentStatus;
+  deliveryStatus: DeliveryStatus;
+  notes?: string;
+  createdAt: Date;
+  deliveredAt?: Date | null;
+  // Backward compatibility fields for public checkout
+  subtotal?: number;
+  deliveryFee?: number;
+  total?: number;
+  customer?: OrderCustomer;
+  status?: string;
+}
+
+export type ExpenseCategory =
+  | "ingredients"
+  | "packaging"
+  | "delivery"
+  | "utilities"
+  | "staff"
+  | "marketing"
+  | "savings"
+  | "other";
+
+export interface Expense {
+  id: string;
+  category: ExpenseCategory;
+  amount: number;
+  description: string;
+  date: Date;
+  createdAt: Date;
+}
+
+export interface Customer {
+  id: string;
+  name: string;
+  phone: string;
+  address: string;
+  lastOrderedAt: Date;
+}
+
+// === Legacy types used by public-facing order tracking pages ===
+
 export type OrderStatus =
   | "pending"
   | "confirmed"
@@ -49,7 +117,6 @@ export interface Order {
   deliveryFee: number;
   total: number;
   customer: OrderCustomer;
-  orderType: OrderType;
   paymentMethod: PaymentMethod;
   status: OrderStatus;
   createdAt: Date;

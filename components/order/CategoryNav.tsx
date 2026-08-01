@@ -34,7 +34,7 @@ export default function CategoryNav({
   }, [activeCategory]);
 
   return (
-    <div className="sticky top-20 z-40 bg-primary/95 backdrop-blur-md border-b border-text shadow-md">
+    <div className="sticky top-22 z-40 bg-primary/95 backdrop-blur-md  shadow-md">
       <div
         ref={containerRef}
         className="max-w-6xl mx-auto flex items-center gap-2 overflow-x-auto py-4 px-4 md:px-8 scrollbar-hide"

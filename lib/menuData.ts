@@ -83,7 +83,7 @@ export const MENU_DATA: MenuItem[] = [
   {
     id: "bg-chicken-cheese",
     name: "Chicken with Cheese Burger",
-    description: "Juicy chicken patty smothered in melted cheese",
+    description: "Juicy chicken cubes smothered in melted cheese",
     price: 179,
     category: "Burger",
     imageUrl: "/images/heropic2.png",
@@ -280,7 +280,7 @@ export const MENU_DATA: MenuItem[] = [
   {
     id: "dk-lacchi",
     name: "Lacchi",
-    description: "Traditional refreshing sweet lassi",
+    description: "Traditional refreshing sweet lacchi",
     price: 79,
     category: "Drinks",
     imageUrl: "/images/storyImage.png",

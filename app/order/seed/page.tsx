@@ -41,10 +41,11 @@ export default function SeedPage() {
       await batch.commit();
       setStatus("success");
       setMessage(`Successfully seeded ${MENU_DATA.length} menu items into your Firestore collection!`);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error("Seeding error:", error);
+      const err = error as Error;
       setStatus("error");
-      setMessage(`Failed to seed data: ${error.message || error}`);
+      setMessage(`Failed to seed data: ${err.message || String(error)}`);
     }
   };
 
