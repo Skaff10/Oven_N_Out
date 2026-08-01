@@ -139,24 +139,45 @@ interface CartContextValue {
 const CartContext = createContext<CartContextValue | null>(null);
 
 const STORAGE_KEY = "ovennout-cart";
+const CART_EXPIRY_MS = 10 * 60 * 1000; // 10 minutes
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const [state, dispatch] = useReducer(reducer, { items: [], isOpen: false });
 
-  // Hydrate from localStorage once on mount
+  // Hydrate from localStorage once on mount (with expiry check)
   useEffect(() => {
     try {
       const raw = localStorage.getItem(STORAGE_KEY);
-      if (raw) dispatch({ type: "HYDRATE", payload: JSON.parse(raw) });
+      if (raw) {
+        const stored = JSON.parse(raw);
+        // Support new format { items, expiresAt } and legacy plain array
+        if (stored && typeof stored === "object" && !Array.isArray(stored)) {
+          if (stored.expiresAt && Date.now() > stored.expiresAt) {
+            // Cart expired — clear it
+            localStorage.removeItem(STORAGE_KEY);
+            return;
+          }
+          if (Array.isArray(stored.items) && stored.items.length > 0) {
+            dispatch({ type: "HYDRATE", payload: stored.items });
+          }
+        } else if (Array.isArray(stored) && stored.length > 0) {
+          // Legacy format (plain array) — hydrate and let persist re-save with expiry
+          dispatch({ type: "HYDRATE", payload: stored });
+        }
+      }
     } catch {
       /* ignore corrupt data */
     }
   }, []);
 
-  // Persist on every change
+  // Persist on every change with a 10-minute expiry timestamp
   useEffect(() => {
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(state.items));
+      const payload = {
+        items: state.items,
+        expiresAt: state.items.length > 0 ? Date.now() + CART_EXPIRY_MS : 0,
+      };
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(payload));
     } catch {
       /* storage full or blocked */
     }
