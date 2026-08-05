@@ -1,11 +1,12 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { useRouter } from "next/navigation";
-import type { Customer, MenuItem, OrderSource, PaymentMethod, PaymentStatus } from "@/types";
+import type { Customer, MenuItem, OrderSource, PaymentMethod } from "@/types";
 import MenuItemPicker, { SelectedItem } from "@/components/admin/MenuItemPicker";
 import RecentCustomersBar from "@/components/admin/RecentCustomersBar";
 import { createManualOrderAction } from "@/lib/actions/adminActions";
+import { DELIVERY_AREAS, AREA_DELIVERY_FEES, getDeliveryFeeForArea } from "@/config/constants";
 import { FaArrowLeft, FaCheckCircle, FaExclamationTriangle } from "react-icons/fa";
 import Link from "next/link";
 
@@ -24,10 +25,13 @@ export default function AddManualOrderClient({
   const [customerName, setCustomerName] = useState("");
   const [customerPhone, setCustomerPhone] = useState("");
   const [customerAddress, setCustomerAddress] = useState("");
+  const [customerArea, setCustomerArea] = useState<string>(DELIVERY_AREAS[0]);
+  const [deliveryFee, setDeliveryFee] = useState<number>(
+    getDeliveryFeeForArea(DELIVERY_AREAS[0])
+  );
   const [selectedItems, setSelectedItems] = useState<SelectedItem[]>([]);
   const [discount, setDiscount] = useState<number>(0);
   const [paymentMethod, setPaymentMethod] = useState<PaymentMethod>("cash");
-  const [paymentStatus, setPaymentStatus] = useState<PaymentStatus>("due");
   const [notes, setNotes] = useState("");
 
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -38,12 +42,21 @@ export default function AddManualOrderClient({
     (sum, item) => sum + item.unitPrice * item.qty,
     0
   );
-  const finalTotal = Math.max(0, calculatedTotal - discount);
+  const finalTotal = Math.max(0, calculatedTotal + deliveryFee - discount);
 
   const handleSelectCustomer = (customer: Customer) => {
     setCustomerName(customer.name);
     setCustomerPhone(customer.phone);
     setCustomerAddress(customer.address);
+    if (customer.area && (DELIVERY_AREAS as readonly string[]).includes(customer.area)) {
+      setCustomerArea(customer.area);
+      setDeliveryFee(getDeliveryFeeForArea(customer.area));
+    }
+  };
+
+  const handleAreaChange = (area: string) => {
+    setCustomerArea(area);
+    setDeliveryFee(getDeliveryFeeForArea(area));
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -70,6 +83,8 @@ export default function AddManualOrderClient({
         customerName: customerName.trim(),
         customerPhone: customerPhone.trim(),
         customerAddress: customerAddress.trim(),
+        customerArea,
+        deliveryFee,
         items: selectedItems.map((i) => ({
           name: i.name,
           qty: i.qty,
@@ -77,13 +92,11 @@ export default function AddManualOrderClient({
         })),
         totalAmount: finalTotal,
         paymentMethod,
-        paymentStatus,
         notes: notes.trim(),
       });
 
       if (res.success) {
         router.push("/admin");
-        router.refresh();
       } else {
         setError(res.error || "Failed to create order.");
         setIsSubmitting(false);
@@ -183,6 +196,24 @@ export default function AddManualOrderClient({
             />
           </div>
 
+          {/* Delivery Area Dropdown (Auto adds fee) */}
+          <div>
+            <label className="block text-xs font-bold text-[#332218]/80 mb-1">
+              Delivery Fee * 
+            </label>
+            <select
+              value={customerArea}
+              onChange={(e) => handleAreaChange(e.target.value)}
+              className="w-full px-3.5 py-2.5 bg-[#FAF2E8] border border-[#E4CEB8] rounded-xl text-sm font-bold text-[#332218] focus:outline-none focus:border-[#81241D] focus:ring-1 focus:ring-[#81241D] cursor-pointer"
+            >
+              {DELIVERY_AREAS.map((area) => (
+                <option key={area} value={area}>
+                  {area} — {AREA_DELIVERY_FEES[area]} tk
+                </option>
+              ))}
+            </select>
+          </div>
+
           <div>
             <label className="block text-xs font-bold text-[#332218]/80 mb-1">
               Delivery Address *
@@ -211,65 +242,29 @@ export default function AddManualOrderClient({
         />
       </div>
 
-      {/* STEP 4: Payment Method + Payment Status */}
+      {/* STEP 4: Payment Method */}
       <div className="bg-white p-4 rounded-2xl border-2 border-[#E4CEB8] shadow-xs space-y-4">
         <label className="text-xs font-black text-[#332218] uppercase tracking-wider">
-          4. Payment Method & Status
+          4. Payment Method
         </label>
 
-        {/* Payment Method Button Group */}
+        {/* Payment Method Button Group (Cash and bKash only) */}
         <div>
-          <div className="text-xs font-bold text-[#332218]/80 mb-2">
-            Payment Method
-          </div>
-          <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
-            {(["cash", "bkash", "nagad", "card", "other"] as PaymentMethod[]).map(
-              (m) => (
-                <button
-                  key={m}
-                  type="button"
-                  onClick={() => setPaymentMethod(m)}
-                  className={`py-2 px-2 rounded-xl text-xs font-extrabold uppercase transition-all cursor-pointer ${
-                    paymentMethod === m
-                      ? "bg-[#81241D] text-[#F1E1CE] shadow-sm"
-                      : "bg-[#FAF2E8] text-[#332218] border border-[#E4CEB8]"
-                  }`}
-                >
-                  {m === "cash" ? "Cash" : m === "bkash" ? "bKash" : m === "nagad" ? "Nagad" : m === "card" ? "Card" : "Other"}
-                </button>
-              )
-            )}
-          </div>
-        </div>
-
-        {/* Payment Status Button Group */}
-        <div>
-          <div className="text-xs font-bold text-[#332218]/80 mb-2">
-            Payment Status
-          </div>
           <div className="grid grid-cols-2 gap-3">
-            <button
-              type="button"
-              onClick={() => setPaymentStatus("due")}
-              className={`py-2.5 px-3 rounded-xl text-xs font-black uppercase transition-all cursor-pointer ${
-                paymentStatus === "due"
-                  ? "bg-amber-800 text-amber-100 shadow-sm border border-amber-900"
-                  : "bg-[#FAF2E8] text-[#332218] border border-[#E4CEB8]"
-              }`}
-            >
-              ⏳ Due
-            </button>
-            <button
-              type="button"
-              onClick={() => setPaymentStatus("paid")}
-              className={`py-2.5 px-3 rounded-xl text-xs font-black uppercase transition-all cursor-pointer ${
-                paymentStatus === "paid"
-                  ? "bg-emerald-800 text-emerald-100 shadow-sm border border-emerald-900"
-                  : "bg-[#FAF2E8] text-[#332218] border border-[#E4CEB8]"
-              }`}
-            >
-              ✓ Paid
-            </button>
+            {(["cash", "bkash"] as PaymentMethod[]).map((m) => (
+              <button
+                key={m}
+                type="button"
+                onClick={() => setPaymentMethod(m)}
+                className={`py-3.5 px-4 rounded-xl text-sm font-extrabold uppercase transition-all cursor-pointer flex items-center justify-center gap-2 ${
+                  paymentMethod === m
+                    ? "bg-[#81241D] text-[#F1E1CE] shadow-md border-2 border-[#81241D]"
+                    : "bg-[#FAF2E8] text-[#332218] hover:bg-[#F1E1CE] border border-[#E4CEB8]"
+                }`}
+              >
+                <span>{m === "cash" ? "💵 Cash" : "💳 bKash"}</span>
+              </button>
+            ))}
           </div>
         </div>
 
@@ -291,12 +286,23 @@ export default function AddManualOrderClient({
       {/* Sticky Order Summary & Submit Bar */}
       <div className="bg-white p-4 rounded-2xl border-2 border-[#81241D] shadow-xl space-y-3">
         <div className="flex items-center justify-between">
-          <div className="text-xs font-bold text-[#332218]/70">Subtotal ({selectedItems.reduce((acc, i) => acc + i.qty, 0)} items)</div>
+          <div className="text-xs font-bold text-[#332218]/70">
+            Food Subtotal ({selectedItems.reduce((acc, i) => acc + i.qty, 0)} items)
+          </div>
           <div className="text-sm font-bold text-[#332218]">৳{calculatedTotal}</div>
         </div>
 
+        <div className="flex items-center justify-between">
+          <div className="text-xs font-bold text-[#332218]/70">
+            Delivery Fee ({customerArea})
+          </div>
+          <div className="text-sm font-bold text-[#81241D]">৳{deliveryFee}</div>
+        </div>
+
         <div className="flex items-center justify-between gap-3">
-          <label className="text-xs font-bold text-[#332218]/70 shrink-0">Discount (৳)</label>
+          <label className="text-xs font-bold text-[#332218]/70 shrink-0">
+            Discount (৳)
+          </label>
           <input
             type="number"
             min="0"

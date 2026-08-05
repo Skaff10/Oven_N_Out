@@ -14,15 +14,19 @@ import {
 } from "firebase/firestore";
 import type { DeliveryStatus, ExpenseCategory, OrderSource, PaymentMethod, PaymentStatus } from "@/types";
 
+import { getDoc } from "firebase/firestore";
+
 export interface CreateManualOrderInput {
   source: OrderSource;
   customerName: string;
   customerPhone: string;
   customerAddress: string;
+  customerArea?: string;
+  deliveryFee?: number;
   items: { name: string; qty: number; unitPrice: number }[];
   totalAmount: number;
   paymentMethod: PaymentMethod;
-  paymentStatus: PaymentStatus;
+  paymentStatus?: PaymentStatus;
   notes?: string;
 }
 
@@ -85,6 +89,10 @@ export async function createManualOrderAction(
     const orderRef = doc(collection(db, "orders"));
 
     const sanitizedPhone = data.customerPhone.replace(/\D/g, "");
+    const deliveryFee = data.deliveryFee ?? 0;
+    const subtotal = Math.max(0, data.totalAmount - deliveryFee);
+    const customerArea = data.customerArea?.trim() || "";
+    const fullAddress = [data.customerAddress.trim(), customerArea].filter(Boolean).join(", ");
 
     const orderPayload = {
       source: data.source,
@@ -92,21 +100,22 @@ export async function createManualOrderAction(
       totalAmount: data.totalAmount,
       customerName: data.customerName.trim(),
       customerPhone: data.customerPhone.trim(),
-      customerAddress: data.customerAddress.trim(),
+      customerAddress: fullAddress,
       paymentMethod: data.paymentMethod,
-      paymentStatus: data.paymentStatus,
+      paymentStatus: data.paymentStatus || "due",
       deliveryStatus: "pending" as DeliveryStatus,
       notes: data.notes?.trim() || "",
       createdAt: serverTimestamp(),
       deliveredAt: null,
       // Legacy compatibility
       total: data.totalAmount,
-      subtotal: data.totalAmount,
-      deliveryFee: 0,
+      subtotal: subtotal,
+      deliveryFee: deliveryFee,
       customer: {
         name: data.customerName.trim(),
         phone: data.customerPhone.trim(),
         address: data.customerAddress.trim(),
+        area: customerArea,
       },
       status: "pending",
     };
@@ -121,7 +130,7 @@ export async function createManualOrderAction(
         {
           name: data.customerName.trim(),
           phone: data.customerPhone.trim(),
-          address: data.customerAddress.trim(),
+          address: fullAddress,
           lastOrderedAt: serverTimestamp(),
         },
         { merge: true }
@@ -172,6 +181,7 @@ export async function addExpenseAction(
 
 /**
  * Server Action: Update delivery status of an order.
+ * Note: Once a status is set to delivered or cancelled, it CANNOT be changed again.
  */
 export async function updateOrderStatusAction(
   orderId: string,
@@ -188,6 +198,17 @@ export async function updateOrderStatusAction(
 
   try {
     const orderRef = doc(db, "orders", orderId);
+    const existingSnap = await getDoc(orderRef);
+    if (!existingSnap.exists()) {
+      return { success: false, error: "Order not found." };
+    }
+
+    const currentData = existingSnap.data();
+    const currentStatus = currentData.deliveryStatus || currentData.status;
+
+    if (currentStatus === "delivered" || currentStatus === "cancelled" || currentStatus === "completed") {
+      return { success: false, error: "Order status is finalized and cannot be changed." };
+    }
 
     // Legacy status map
     let legacyStatus = deliveryStatus as string;
@@ -201,7 +222,7 @@ export async function updateOrderStatusAction(
 
     if (deliveryStatus === "delivered") {
       updatePayload.deliveredAt = serverTimestamp();
-      updatePayload.paymentStatus = "paid"; // Auto-mark paid on delivery if needed
+      updatePayload.paymentStatus = "paid"; // Auto-mark paid on delivery
     }
 
     await updateDoc(orderRef, updatePayload);

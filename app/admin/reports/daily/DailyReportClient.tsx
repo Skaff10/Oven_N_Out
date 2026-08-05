@@ -20,13 +20,24 @@ export default function DailyReportClient({
 }: DailyReportClientProps) {
   const router = useRouter();
 
-  // Calculate daily metrics
-  const validOrders = orders.filter((o) => o.deliveryStatus !== "cancelled");
-  const totalIncome = validOrders.reduce((s, o) => s + o.totalAmount, 0);
+  // Calculate daily metrics (ONLY delivered orders add money to bill/totals)
+  const deliveredOrders = orders.filter((o) => o.deliveryStatus === "delivered");
+  const totalIncome = deliveredOrders.reduce((s, o) => s + o.totalAmount, 0);
+  const bkashTotal = deliveredOrders
+    .filter((o) => o.paymentMethod === "bkash")
+    .reduce((s, o) => s + o.totalAmount, 0);
+  const cashTotal = deliveredOrders
+    .filter((o) => o.paymentMethod === "cash" || o.paymentMethod === "cod")
+    .reduce((s, o) => s + o.totalAmount, 0);
+  const deliveryFeeTotal = deliveredOrders.reduce(
+    (s, o) => s + (o.deliveryFee || 0),
+    0
+  );
+
   const totalExpenses = expenses.reduce((s, e) => s + e.amount, 0);
   const netProfit = totalIncome - totalExpenses;
 
-  // Income by source
+  // Income by source (delivered orders only)
   const incomeBySource: Record<OrderSource, number> = {
     website: 0,
     facebook: 0,
@@ -34,7 +45,7 @@ export default function DailyReportClient({
     pathao: 0,
     foodpanda: 0,
   };
-  validOrders.forEach((o) => {
+  deliveredOrders.forEach((o) => {
     incomeBySource[o.source] = (incomeBySource[o.source] || 0) + o.totalAmount;
   });
 
@@ -116,10 +127,13 @@ export default function DailyReportClient({
       <div className="grid grid-cols-3 gap-2">
         <div className="bg-white p-3 rounded-xl border border-[#E4CEB8] text-center">
           <div className="text-[10px] font-bold text-[#332218]/60 uppercase">
-            Income
+            Delivered Income
           </div>
           <div className="text-lg font-black text-emerald-700 mt-0.5">
             ৳{totalIncome.toLocaleString()}
+          </div>
+          <div className="text-[9px] font-semibold text-[#332218]/50 mt-0.5">
+            {deliveredOrders.length} of {orders.length} orders
           </div>
         </div>
         <div className="bg-white p-3 rounded-xl border border-[#E4CEB8] text-center">
@@ -129,10 +143,13 @@ export default function DailyReportClient({
           <div className="text-lg font-black text-amber-900 mt-0.5">
             ৳{totalExpenses.toLocaleString()}
           </div>
+          <div className="text-[9px] font-semibold text-[#332218]/50 mt-0.5">
+            {expenses.length} items
+          </div>
         </div>
         <div className="bg-white p-3 rounded-xl border-2 border-[#81241D]/30 text-center">
           <div className="text-[10px] font-bold text-[#332218]/60 uppercase">
-            Net
+            Net Profit
           </div>
           <div
             className={`text-lg font-black mt-0.5 ${
@@ -140,6 +157,39 @@ export default function DailyReportClient({
             }`}
           >
             ৳{netProfit.toLocaleString()}
+          </div>
+        </div>
+      </div>
+
+      {/* Daily Money Tracking Breakdown */}
+      <div className="bg-white p-4 rounded-2xl border border-[#E4CEB8] space-y-2">
+        <h2 className="text-xs font-black text-[#332218] uppercase tracking-wider">
+          Money Tracking Breakdown (Delivered Orders Only)
+        </h2>
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="bg-[#FAF2E8] p-2.5 rounded-xl border border-[#E4CEB8]">
+            <div className="text-[10px] font-bold text-[#332218]/70 uppercase">
+              💳 bKash
+            </div>
+            <div className="text-sm font-black text-pink-700 mt-0.5">
+              ৳{bkashTotal.toLocaleString()}
+            </div>
+          </div>
+          <div className="bg-[#FAF2E8] p-2.5 rounded-xl border border-[#E4CEB8]">
+            <div className="text-[10px] font-bold text-[#332218]/70 uppercase">
+              💵 Cash
+            </div>
+            <div className="text-sm font-black text-emerald-800 mt-0.5">
+              ৳{cashTotal.toLocaleString()}
+            </div>
+          </div>
+          <div className="bg-[#FAF2E8] p-2.5 rounded-xl border border-[#E4CEB8]">
+            <div className="text-[10px] font-bold text-[#332218]/70 uppercase">
+              🛵 Delivery Fee
+            </div>
+            <div className="text-sm font-black text-[#81241D] mt-0.5">
+              ৳{deliveryFeeTotal.toLocaleString()}
+            </div>
           </div>
         </div>
       </div>

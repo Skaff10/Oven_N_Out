@@ -8,7 +8,7 @@ import Button from "@/components/ui/Button";
 import Input from "@/components/ui/Input";
 import OrderSummary from "@/components/order/OrderSummary";
 import { createOrder } from "@/lib/orders";
-import { DELIVERY_AREAS, DELIVERY_FEE } from "@/config/constants";
+import { DELIVERY_AREAS, getDeliveryFeeForArea, AREA_DELIVERY_FEES } from "@/config/constants";
 import { FaArrowLeft } from "react-icons/fa";
 import type { OrderCustomer, PaymentMethod } from "@/types";
 
@@ -24,6 +24,8 @@ export default function CheckoutPage() {
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const currentDeliveryFee = getDeliveryFeeForArea(formData.area);
 
   // Redirect to order page if cart is empty
   useEffect(() => {
@@ -80,7 +82,7 @@ export default function CheckoutPage() {
         area: formData.area,
       };
 
-      const finalDeliveryFee = DELIVERY_FEE;
+      const finalDeliveryFee = currentDeliveryFee;
       const total = subtotal + finalDeliveryFee;
 
       const orderId = await createOrder({
@@ -154,11 +156,11 @@ export default function CheckoutPage() {
                   name="area"
                   value={formData.area}
                   onChange={handleInputChange}
-                  className="w-full px-4 py-2.5 bg-secondary text-text font-bold border border-dark-border rounded-lg focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors"
+                  className="w-full px-4 py-2.5 bg-secondary text-text font-bold border border-dark-border rounded-lg focus:outline-none focus:border-accent focus:ring-1 focus:ring-accent transition-colors cursor-pointer"
                 >
                   {DELIVERY_AREAS.map((area) => (
                     <option key={area} value={area}>
-                      {area}
+                      {area} — {AREA_DELIVERY_FEES[area]} <span>tk</span>
                     </option>
                   ))}
                 </select>
@@ -193,6 +195,7 @@ export default function CheckoutPage() {
             <OrderSummary
               items={items}
               subtotal={subtotal}
+              deliveryFee={currentDeliveryFee}
             />
           </div>
         </div>

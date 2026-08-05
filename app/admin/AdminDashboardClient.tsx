@@ -17,18 +17,26 @@ import {
 
 interface DashboardProps {
   todayIncome: number;
+  bkashIncome?: number;
+  cashIncome?: number;
+  deliveryFeeIncome?: number;
   todayExpenses: number;
   netProfit: number;
   recentOrders: AdminOrder[];
   todayOrderCount: number;
+  deliveredOrderCount?: number;
 }
 
 export default function AdminDashboardClient({
   todayIncome,
+  bkashIncome = 0,
+  cashIncome = 0,
+  deliveryFeeIncome = 0,
   todayExpenses,
   netProfit,
   recentOrders,
   todayOrderCount,
+  deliveredOrderCount = 0,
 }: DashboardProps) {
   const router = useRouter();
   const [updatingId, setUpdatingId] = useState<string | null>(null);
@@ -39,8 +47,12 @@ export default function AdminDashboardClient({
   ) => {
     setUpdatingId(orderId);
     try {
-      await updateOrderStatusAction(orderId, newStatus);
-      router.refresh();
+      const res = await updateOrderStatusAction(orderId, newStatus);
+      if (res.success) {
+        router.refresh();
+      } else {
+        alert(res.error || "Failed to update order status");
+      }
     } catch (err) {
       alert("Failed to update order status");
     } finally {
@@ -52,17 +64,17 @@ export default function AdminDashboardClient({
     <div className="space-y-6">
       {/* Glanceable KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-        {/* Today's Income */}
+        {/* Delivered Income */}
         <div className="bg-white p-4 rounded-2xl border-2 border-[#E4CEB8] shadow-md flex items-center justify-between">
           <div>
             <div className="text-xs font-bold text-[#332218]/70 uppercase tracking-wider">
-              Today's Income
+              Delivered Income
             </div>
-            <div className="text-2xl font-black text-[#81241D] mt-1">
+            <div className="text-2xl font-black text-emerald-700 mt-1">
               ৳{todayIncome.toLocaleString()}
             </div>
             <div className="text-[11px] font-semibold text-[#332218]/60 mt-0.5">
-              {todayOrderCount} orders today
+              {deliveredOrderCount} of {todayOrderCount} orders delivered
             </div>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-emerald-100 text-emerald-800 flex items-center justify-center">
@@ -88,7 +100,7 @@ export default function AdminDashboardClient({
           </div>
         </div>
 
-        {/* Today's Net */}
+        {/* Today's Net Profit */}
         <div className="bg-white p-4 rounded-2xl border-2 border-[#81241D]/30 shadow-md flex items-center justify-between">
           <div>
             <div className="text-xs font-bold text-[#332218]/70 uppercase tracking-wider">
@@ -102,11 +114,46 @@ export default function AdminDashboardClient({
               ৳{netProfit.toLocaleString()}
             </div>
             <div className="text-[11px] font-semibold text-[#332218]/60 mt-0.5">
-              Income minus expenses
+              Delivered income minus costs
             </div>
           </div>
           <div className="w-12 h-12 rounded-2xl bg-[#DEB124]/20 text-[#81241D] flex items-center justify-center">
             <FaChartLine size={22} />
+          </div>
+        </div>
+      </div>
+
+      {/* Money Tracking Breakdown Bar (bKash, Cash, Delivery Charged) */}
+      <div className="bg-white p-4 rounded-2xl border border-[#E4CEB8] shadow-xs space-y-3">
+        <div className="text-xs font-black text-[#332218] uppercase tracking-wider">
+          Money Tracking Breakdown (Delivered Orders Only)
+        </div>
+        <div className="grid grid-cols-3 gap-2 text-center">
+          <div className="bg-[#FAF2E8] p-3 rounded-xl border border-[#E4CEB8]">
+            <div className="text-[10px] font-bold text-[#332218]/70 uppercase">
+              💳 bKash Payment
+            </div>
+            <div className="text-base font-black text-pink-700 mt-1">
+              ৳{bkashIncome.toLocaleString()}
+            </div>
+          </div>
+
+          <div className="bg-[#FAF2E8] p-3 rounded-xl border border-[#E4CEB8]">
+            <div className="text-[10px] font-bold text-[#332218]/70 uppercase">
+              💵 Cash Payment
+            </div>
+            <div className="text-base font-black text-emerald-800 mt-1">
+              ৳{cashIncome.toLocaleString()}
+            </div>
+          </div>
+
+          <div className="bg-[#FAF2E8] p-3 rounded-xl border border-[#E4CEB8]">
+            <div className="text-[10px] font-bold text-[#332218]/70 uppercase">
+              🛵 Delivery Fee
+            </div>
+            <div className="text-base font-black text-[#81241D] mt-1">
+              ৳{deliveryFeeIncome.toLocaleString()}
+            </div>
           </div>
         </div>
       </div>
@@ -178,33 +225,31 @@ export default function AdminDashboardClient({
                   </div>
                 </div>
 
-                {/* Quick 1-Tap Status Change Button Group */}
-                <div className="flex items-center gap-1.5 pt-1 overflow-x-auto scrollbar-hide">
-                  {(["pending", "out_for_delivery", "delivered", "cancelled"] as DeliveryStatus[]).map(
-                    (st) => {
-                      const isActive = order.deliveryStatus === st;
-                      return (
-                        <button
-                          key={st}
-                          type="button"
-                          disabled={updatingId === order.id}
-                          onClick={() => handleStatusChange(order.id, st)}
-                          className={`px-2.5 py-1 rounded-lg text-[10px] font-extrabold transition-all cursor-pointer ${
-                            isActive
-                              ? "bg-[#81241D] text-[#F1E1CE] shadow-xs"
-                              : "bg-white text-[#332218]/80 hover:bg-[#F1E1CE] border border-[#E4CEB8]"
-                          }`}
-                        >
-                          {st === "pending"
-                            ? "Pending"
-                            : st === "out_for_delivery"
-                            ? "On the Way"
-                            : st === "delivered"
-                            ? "Delivered"
-                            : "Cancelled"}
-                        </button>
-                      );
-                    }
+                {/* Status Action Buttons */}
+                <div className="pt-1">
+                  {order.deliveryStatus === "delivered" || order.deliveryStatus === "cancelled" ? (
+                    <span className="text-[10px] font-bold text-gray-500">
+                       {order.deliveryStatus === "delivered" ? "✓ Delivered" : "✕ Cancelled"}
+                    </span>
+                  ) : (
+                    <div className="flex items-center gap-2">
+                      <button
+                        type="button"
+                        disabled={updatingId === order.id}
+                        onClick={() => handleStatusChange(order.id, "delivered")}
+                        className="px-3 py-1 bg-emerald-800 hover:bg-emerald-900 text-emerald-100 text-[10px] font-extrabold rounded-lg transition-all cursor-pointer"
+                      >
+                        ✓ Delivered
+                      </button>
+                      <button
+                        type="button"
+                        disabled={updatingId === order.id}
+                        onClick={() => handleStatusChange(order.id, "cancelled")}
+                        className="px-3 py-1 bg-red-800 hover:bg-red-900 text-red-100 text-[10px] font-extrabold rounded-lg transition-all cursor-pointer"
+                      >
+                        ✕ Cancelled
+                      </button>
+                    </div>
                   )}
                 </div>
               </div>

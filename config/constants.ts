@@ -1,4 +1,18 @@
-export const DELIVERY_FEE = 50; // ৳ — flat rate
+export const AREA_DELIVERY_FEES: Record<string, number> = {
+  Mugda: 50,
+  Manda: 40,
+  Maniknagar: 50,
+  Bashabo: 60,
+};
+
+export const DEFAULT_DELIVERY_FEE = 50;
+
+export const getDeliveryFeeForArea = (area?: string): number => {
+  if (!area) return DEFAULT_DELIVERY_FEE;
+  return AREA_DELIVERY_FEES[area] ?? DEFAULT_DELIVERY_FEE;
+};
+
+export const DELIVERY_FEE = 50; // default fallback rate
 export const DELIVERY_AREAS = [
   "Mugda",
   "Manda",

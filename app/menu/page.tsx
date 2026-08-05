@@ -29,10 +29,10 @@ export default function MenuSection() {
         <div className="flex justify-center mb-6 px-4">
           <button
             onClick={() => setIsOpen(true)}
-            className="cursor-pointer transition-transform hover:scale-[1.02] w-full max-w-[400px] md:max-w-[620px] lg:max-w-[700px] flex justify-center"
+            className="cursor-pointer transition-transform hover:scale-[1.02] w-full max-w-100 md:max-w-155 lg:max-w-175 flex justify-center"
             aria-label="Open full menu"
           >
-            <div className="relative w-full aspect-[2/3] max-w-[400px] md:max-w-[620px] lg:max-w-[700px] rounded-2xl overflow-hidden shadow-2xl">
+            <div className="relative w-full aspect-2/3 max-w-100 md:max-w-155 lg:max-w-175 rounded-2xl overflow-hidden shadow-2xl">
               <Image
                 src="/images/menu2.png"
                 alt="Restaurant menu"

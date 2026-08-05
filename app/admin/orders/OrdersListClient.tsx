@@ -14,10 +14,9 @@ interface OrdersListClientProps {
 
 const STATUS_FILTERS: { label: string; value: DeliveryStatus | "all" }[] = [
   { label: "All", value: "all" },
-  { label: "⏳ Pending", value: "pending" },
-  { label: "🛵 On the Way", value: "out_for_delivery" },
   { label: "✓ Delivered", value: "delivered" },
   { label: "✕ Cancelled", value: "cancelled" },
+  { label: "⏳ Pending", value: "pending" },
 ];
 
 export default function OrdersListClient({ orders }: OrdersListClientProps) {
@@ -37,8 +36,12 @@ export default function OrdersListClient({ orders }: OrdersListClientProps) {
   ) => {
     setUpdatingId(orderId);
     try {
-      await updateOrderStatusAction(orderId, newStatus);
-      router.refresh();
+      const res = await updateOrderStatusAction(orderId, newStatus);
+      if (res.success) {
+        router.refresh();
+      } else {
+        alert(res.error || "Failed to update order status.");
+      }
     } catch {
       alert("Failed to update order status.");
     } finally {
@@ -189,43 +192,37 @@ export default function OrdersListClient({ orders }: OrdersListClientProps) {
                     {/* 1-Tap Status Change Buttons */}
                     <div>
                       <div className="text-[10px] font-bold text-[#332218]/60 uppercase mb-1.5">
-                        Change Delivery Status:
+                        Set Order Status:
                       </div>
-                      <div className="flex items-center gap-2 flex-wrap">
-                        {(
-                          [
-                            "pending",
-                            "out_for_delivery",
-                            "delivered",
-                            "cancelled",
-                          ] as DeliveryStatus[]
-                        ).map((st) => {
-                          const isActive = order.deliveryStatus === st;
-                          const labels: Record<DeliveryStatus, string> = {
-                            pending: "⏳ Pending",
-                            out_for_delivery: "🛵 On the Way",
-                            delivered: "✓ Delivered",
-                            cancelled: "✕ Cancelled",
-                          };
-                          return (
-                            <button
-                              key={st}
-                              type="button"
-                              disabled={updatingId === order.id}
-                              onClick={() =>
-                                handleStatusChange(order.id, st)
-                              }
-                              className={`px-3 py-1.5 rounded-xl text-[11px] font-extrabold transition-all cursor-pointer ${
-                                isActive
-                                  ? "bg-[#81241D] text-[#F1E1CE] shadow-sm"
-                                  : "bg-[#FAF2E8] text-[#332218]/80 hover:bg-[#F1E1CE] border border-[#E4CEB8]"
-                              }`}
-                            >
-                              {labels[st]}
-                            </button>
-                          );
-                        })}
-                      </div>
+                      {order.deliveryStatus === "delivered" || order.deliveryStatus === "cancelled" ? (
+                        <div className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-gray-100 border border-gray-300 rounded-xl text-xs font-bold text-gray-700">
+                          <span>🔒 Status Finalized: {order.deliveryStatus === "delivered" ? "✓ Delivered" : "✕ Cancelled"}</span>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          {(["delivered", "cancelled"] as DeliveryStatus[]).map((st) => {
+                            const labels: Record<string, string> = {
+                              delivered: "✓ Delivered",
+                              cancelled: "✕ Cancelled",
+                            };
+                            return (
+                              <button
+                                key={st}
+                                type="button"
+                                disabled={updatingId === order.id}
+                                onClick={() => handleStatusChange(order.id, st)}
+                                className={`px-4 py-2 rounded-xl text-xs font-extrabold transition-all cursor-pointer ${
+                                  st === "delivered"
+                                    ? "bg-emerald-800 text-emerald-100 hover:bg-emerald-900 border border-emerald-900"
+                                    : "bg-red-800 text-red-100 hover:bg-red-900 border border-red-900"
+                                }`}
+                              >
+                                {labels[st]}
+                              </button>
+                            );
+                          })}
+                        </div>
+                      )}
                     </div>
                   </div>
                 )}

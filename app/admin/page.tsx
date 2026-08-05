@@ -24,10 +24,20 @@ export default async function AdminDashboardPage() {
     getAdminOrders(10),
   ]);
 
-  // Calculate metrics
-  const todayIncome = todayOrders
-    .filter((o) => o.deliveryStatus !== "cancelled")
+  // Calculate metrics (ONLY count delivered orders towards income & money tracking)
+  const deliveredOrders = todayOrders.filter((o) => o.deliveryStatus === "delivered");
+
+  const todayIncome = deliveredOrders.reduce((sum, o) => sum + o.totalAmount, 0);
+  const bkashIncome = deliveredOrders
+    .filter((o) => o.paymentMethod === "bkash")
     .reduce((sum, o) => sum + o.totalAmount, 0);
+  const cashIncome = deliveredOrders
+    .filter((o) => o.paymentMethod === "cash" || o.paymentMethod === "cod")
+    .reduce((sum, o) => sum + o.totalAmount, 0);
+  const deliveryFeeIncome = deliveredOrders.reduce(
+    (sum, o) => sum + (o.deliveryFee || 0),
+    0
+  );
 
   const totalExpenses = todayExpenses.reduce((sum, e) => sum + e.amount, 0);
   const netProfit = todayIncome - totalExpenses;
@@ -35,10 +45,14 @@ export default async function AdminDashboardPage() {
   return (
     <AdminDashboardClient
       todayIncome={todayIncome}
+      bkashIncome={bkashIncome}
+      cashIncome={cashIncome}
+      deliveryFeeIncome={deliveryFeeIncome}
       todayExpenses={totalExpenses}
       netProfit={netProfit}
       recentOrders={recentOrders}
       todayOrderCount={todayOrders.length}
+      deliveredOrderCount={deliveredOrders.length}
     />
   );
 }

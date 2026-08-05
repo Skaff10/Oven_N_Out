@@ -4,15 +4,17 @@ import { DELIVERY_FEE } from "@/config/constants";
 interface OrderSummaryProps {
   items: any[];
   subtotal: number;
+  deliveryFee?: number;
   showDetails?: boolean;
 }
 
 export default function OrderSummary({
   items,
   subtotal,
+  deliveryFee = DELIVERY_FEE,
   showDetails = true,
 }: OrderSummaryProps) {
-  const currentDeliveryFee = DELIVERY_FEE;
+  const currentDeliveryFee = deliveryFee;
   const total = subtotal + currentDeliveryFee;
 
   return (
@@ -68,7 +70,7 @@ export default function OrderSummary({
         <div className="flex justify-between text-text">
           <span>Delivery Fee</span>
           <span>
-            {DELIVERY_FEE} <span>tk</span>
+            {currentDeliveryFee} <span>tk</span>
           </span>
         </div>
 

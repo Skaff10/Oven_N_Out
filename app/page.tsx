@@ -84,7 +84,7 @@ const Homepage = () => {
 
       <section className="bg-secondary py-8">
         <div className="max-w-7xl mx-auto px-5 md:px-12">
-          <div className="relative w-full rounded-2xl md:rounded-3xl overflow-hidden bg-primary grid grid-cols-1 md:grid-cols-2 min-h-[440px] md:min-h-[480px] shadow-2xl">
+          <div className="relative w-full rounded-2xl md:rounded-3xl overflow-hidden bg-primary grid grid-cols-1 md:grid-cols-2 min-h-110 md:min-h-120 shadow-2xl">
             {/* Background image on mobile, right side image on desktop */}
             <div className="absolute inset-0 md:relative md:inset-auto md:order-2 md:h-full w-full">
               <Image
@@ -98,7 +98,7 @@ const Homepage = () => {
             </div>
 
             {/* Text content on left side for desktop */}
-            <div className="relative z-10 flex flex-col justify-center p-6 md:p-12 md:order-1 bg-gradient-to-t from-black/80 via-black/40 to-transparent md:bg-none">
+            <div className="relative z-10 flex flex-col justify-center p-6 md:p-12 md:order-1 bg-linear-to-t from-black/80 via-black/40 to-transparent md:bg-none">
               <h4 className="font-heading text-lg text-left text-secondary pb-1">
                 Tasty & Crispy
               </h4>
