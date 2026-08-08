@@ -13,6 +13,7 @@ import {
   Timestamp,
 } from "firebase/firestore";
 import type { DeliveryStatus, ExpenseCategory, OrderSource, PaymentMethod, PaymentStatus } from "@/types";
+import { sendOrderTelegramNotification } from "@/lib/telegram";
 
 import { getDoc } from "firebase/firestore";
 
@@ -138,6 +139,21 @@ export async function createManualOrderAction(
     }
 
     await batch.commit();
+
+    // Fire-and-forget Telegram notification for manual orders
+    sendOrderTelegramNotification({
+      id: orderRef.id,
+      source: data.source,
+      customerName: data.customerName.trim(),
+      customerPhone: data.customerPhone.trim(),
+      customerAddress: fullAddress,
+      items: data.items,
+      subtotal: subtotal,
+      deliveryFee: deliveryFee,
+      totalAmount: data.totalAmount,
+      paymentMethod: data.paymentMethod,
+    }).catch((err) => console.error("[Telegram Manual Order Notification Error]:", err));
+
     return { success: true, orderId: orderRef.id };
   } catch (err: any) {
     console.error("[createManualOrderAction] Error:", err);

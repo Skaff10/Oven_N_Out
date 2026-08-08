@@ -15,6 +15,8 @@ import {
 } from "firebase/firestore";
 import type { CartItem, OrderCustomer, PaymentMethod, AdminOrder, DeliveryStatus } from "@/types";
 import { getDhakaDayRange, getDhakaMonthRange } from "./dateUtils";
+import { sendOrderTelegramNotification } from "./telegram";
+
 
 interface CreateOrderData {
   items: CartItem[];
@@ -170,6 +172,26 @@ export async function createOrder(data: CreateOrderData): Promise<string> {
   }
 
   await batch.commit();
+
+  // Send Telegram notification asynchronously without blocking order completion
+  sendOrderTelegramNotification({
+    id: orderRef.id,
+    source: "website",
+    customerName: data.customer.name.trim(),
+    customerPhone: data.customer.phone.trim(),
+    customerAddress: fullAddress.trim(),
+    items: data.items.map((i) => ({
+      name: i.name,
+      qty: i.quantity,
+      unitPrice: i.price,
+      variant: i.variant,
+    })),
+    subtotal: data.subtotal,
+    deliveryFee: data.deliveryFee,
+    totalAmount: data.total,
+    paymentMethod: data.paymentMethod,
+  }).catch((err) => console.error("[Telegram Notification Trigger Error]:", err));
+
   return orderRef.id;
 }
 
