@@ -1,6 +1,6 @@
 # 🍔 Oven & Out — Online Ordering & Restaurant Management System
 
-[![Live Website](https://img.shields.io/badge/Live%20Website-ovenandout.org-FF5722?style=for-the-badge&logo=google-chrome&logoColor=white)](https://ovenandout.org)
+[![Live Website](https://img.shields.io/badge/Live%20Website-ovenandout.org-FF5722?style=for-the-badge&logo=google-chrome&logoColor=white)](https://ovenandout.cloud)
 [![Next.js](https://img.shields.io/badge/Next.js-16.2.10-black?style=for-the-badge&logo=next.js&logoColor=white)](https://nextjs.org/)
 [![React](https://img.shields.io/badge/React-19.2.4-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.0-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com/)
